@@ -1,5 +1,5 @@
 import type {
-  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   Application,
   Context
 } from "./deps.ts";
@@ -11,17 +11,17 @@ const isReader = (value: any): value is Deno.Reader =>
   "read" in value &&
   typeof value.read === "function";
 
-const eventUrl = (event: APIGatewayProxyEvent): string => {
+const eventUrl = (event: APIGatewayProxyEventV2): string => {
   if (event.queryStringParameters) {
-    return `${event.path}?${Object.keys(event.queryStringParameters)
+    return `${event.rawPath}?${Object.keys(event.queryStringParameters)
       .map((k) => `${k}=${event.queryStringParameters![k]}`)
       .join("&")}`;
   }
-  return event.path;
+  return event.rawPath;
 };
 
 export const serverRequest = (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEventV2,
   context: Context
 ): Request => {
   const headers = new Headers(event.headers as unknown as string[][] ?? undefined);
@@ -37,7 +37,7 @@ export const serverRequest = (
   headers.set("x-apigateway-context", JSON.stringify(context));
 
   return new Request(url, {
-    method: event.httpMethod,
+    method: event.requestContext.http.method,
     headers: headers,
     body,
   });
@@ -69,7 +69,7 @@ export const apiGatewayResponse = async (response?: Response) => {
 };
 
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEventV2,
   context: Context,
   app: Application
 ) => {

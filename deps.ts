@@ -1,5 +1,5 @@
 export type {
-  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   Context,
 } from 'https://deno.land/x/lambda/mod.ts';
 export type {
